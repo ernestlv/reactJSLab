@@ -13,10 +13,97 @@
   </head>
   <body>
     <div id="content"></div>
-    <script type="text/babel" src="scripts/example.js"></script>
     <script type="text/babel">
       // To get started with this tutorial running your own code, simply remove
       // the script tag loading scripts/example.js and start writing code here.
+
+      var CommentList = React.createClass({
+          render: function(){
+            var comments = this.props.data.map(function(comment){
+                return (
+                    <Comment author={comment.author} key={comment.id}>
+                      {comment.text}
+                    </Comment>
+                );
+            });
+            return (
+                <div className="commentList">
+                    {comments}
+                </div>
+            );
+          }
+      });
+
+      var CommentForm = React.createClass({
+        render: function(){
+            return (
+              <div className="commentForm">
+                Hello I am a CForm
+              </div>
+            );
+        }
+      });
+
+      var Comment = React.createClass({
+          rawMarkup: function(){
+            var md = new Remarkable();
+            var rawM = md.render(this.props.children.toString());
+            return { __html: rawM };
+          },
+
+          render: function(){
+            
+            return (
+                <div className="comment">
+                  <h2 className="commentAuthor">
+                    {this.props.author}
+                  </h2>
+                  <span dangerouslySetInnerHTML={this.rawMarkup()} />
+                </div>
+            );
+          }
+      });
+
+      var CommentBox = React.createClass({
+        getInitialState: function(){ // state is private
+          return {data:[]};
+        },
+
+        loadComments: function(){
+          var that = this;
+          fetch(this.props.url).then(function(response){
+            if (response.ok){
+              response.json().then(function(json){
+                that.setState({data:json});
+              });
+            }else{
+              console.log('Network Error');
+            }
+          }).catch(function(error){
+            console.log(that.props.url, error.message);
+          });
+        },
+
+        componentDidMount: function(){ //execute after component render 1st time
+          this.loadComments();
+          setInterval(this.loadComments, this.props.pollInterval);
+        },
+
+        render: function(){ //execute each time state changes
+          return (
+            <div className="commentBox">
+                <h1>comments!</h1>
+                <CommentList data={this.state.data} />
+                <CommentForm />
+            </div>
+          );
+        }
+      });
+
+      ReactDOM.render(
+        <CommentBox url="/api/comments" pollInterval={2000} />,
+        document.getElementById('content')
+      );
     </script>
   </body>
 </html>
