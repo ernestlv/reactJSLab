@@ -35,11 +35,25 @@
       });
 
       var CommentForm = React.createClass({
+        getInitialState: function(){
+          return {author:'', text:''};
+        },
+
+        handleTextChange: function(e){
+            this.setState({text: e.target.value});
+        },
+
+        handleAuthorChange: function(e){
+            this.setState({author: e.target.value});
+        },
+
         render: function(){
             return (
-              <div className="commentForm">
-                Hello I am a CForm
-              </div>
+              <form className="commentForm">
+                <input type="text" placeholder="Your name ..." value={this.state.author} onChange={this.handleAuthorChange} />
+                <input type="text" placeholder="Say something ..." value={this.state.text} onChange={this.handleTextChange} />
+                <input type="submit" value="Post" />
+              </form>
             );
         }
       });
@@ -71,15 +85,15 @@
 
         loadComments: function(){
           var that = this;
-          fetch(this.props.url).then(function(response){
+          fetch(this.props.url).then(function(response){ //fetch resolves to a response
             if (response.ok){
-              response.json().then(function(json){
+              response.json().then(function(json){  //json consumes the response and resolves to actual data
                 that.setState({data:json});
               });
             }else{
               console.log('Network Error');
             }
-          }).catch(function(error){
+          }).catch(function(error){ //any errors in this execution will pop here
             console.log(that.props.url, error.message);
           });
         },
